@@ -1,0 +1,13 @@
+{
+  "source_file": "source.pdf",
+  "appendices": [
+    {
+      "file": "Appendix-A.pdf",
+      "placeholder": "[2.1 Environmental Loads]"
+    },
+    {
+      "file": "Appendix-B.pdf",
+      "placeholder": "[2.2 Blast Loads]"
+    }
+  ]
+}
