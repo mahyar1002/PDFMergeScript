@@ -96,9 +96,10 @@ def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
     setup_documents(source_doc, appendices)
     appendices = sorted(
         appendices, key=lambda x: x.position_in_source_doc, reverse=True)
+    # for apendix in appendices:
+    #     source_doc.delete_page(apendix.position_in_source_doc)
     for apendix in appendices:
         source_doc.delete_page(apendix.position_in_source_doc)
-    for apendix in appendices:
         source_doc.insert_pdf(
             apendix.doc, start_at=apendix.position_in_source_doc)
     updated_toc = update_toc(initial_toc, appendices)
