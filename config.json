@@ -1,13 +1,17 @@
 {
-  "source_file": "source.pdf",
+  "source_file": "ReactionForces-Rev05.pdf",
   "appendices": [
     {
-      "file": "Appendix-A.pdf",
-      "placeholder": "[2.1 Environmental Loads]"
+      "file": "Environmental-loads.pdf",
+      "placeholder": "[3.1 Environmental Loads]"
     },
     {
-      "file": "Appendix-B.pdf",
-      "placeholder": "[2.2 Blast Loads]"
+      "file": "Blast-loads.pdf",
+      "placeholder": "[3.2 Blast Loads]"
+    },
+    {
+      "file": "EQ-loads.pdf",
+      "placeholder": "[3.3 Earthquake]"
     }
   ]
 }
