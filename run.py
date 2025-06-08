@@ -42,13 +42,12 @@ def update_toc(initial_toc, appendices: List[Appendix]):
     for entry in initial_toc:
         level, title, page_num = entry
 
-        for appendix in appendices:
+        for index, appendix in enumerate(appendices):
             if title in appendix.placeholder_text:
                 total_num = total_prev_len(
                     appendix.placeholder_text, appendices)
                 page_num = appendix.position_in_source_doc + \
-                    total_prev_len(appendix.placeholder_text, appendices) - \
-                    1 if total_num else appendix.position_in_source_doc
+                    total_num - index if total_num else appendix.position_in_source_doc
 
         updated_toc.append([level, title, page_num])
 
@@ -91,13 +90,56 @@ def update_toc_text(doc: fitz.Document, initial_toc, updated_toc):
     return doc
 
 
+def update_page_numbers(doc: fitz.Document, appendices: List[Appendix]):
+    sorted_appendices = sorted(
+        appendices, key=lambda x: x.position_in_source_doc)
+    totla_pages = source_doc.page_count
+    total_page_numbers_before_appendices = sorted_appendices[0].position_in_source_doc
+
+    def update_page(page, text_to_replace):
+        x_equation = len(text_to_replace) - 7
+        text_instances = page.search_for("[page_#]")
+        if not text_instances:
+            return
+
+        rect = text_instances[-1]
+
+        # 1. Erase old placeholder text (draw white rectangle)
+        shape = page.new_shape()
+        shape.draw_rect(rect)
+        shape.finish(width=0, fill=(1, 1, 1), color=(1, 1, 1))
+        shape.commit()
+
+        # Fill the area with white color manually
+        page.draw_rect(rect, fill=(1, 1, 1), color=(1, 1, 1), width=0)
+
+        # Left-aligned with the old text
+        text_x = rect.x0 + 8 - (x_equation*5)
+        # Vertically centered
+        text_y = rect.y0 + ((rect.y1 - rect.y0) / 1.35)
+        # Ensure text is written in the cleared area
+        page.insert_text((text_x, text_y), text_to_replace,
+                         fontsize=9, color=(0, 0, 0))
+
+    for page_count in range(2, total_page_numbers_before_appendices):
+        page = doc[page_count]
+        text_to_replace = f"{page_count + 1} of {totla_pages}"
+        update_page(page, text_to_replace)
+
+    total_pages_comulative = total_page_numbers_before_appendices + \
+        len(sorted_appendices[0].doc)
+    for i in range(1, len(sorted_appendices)):
+        page = doc[total_pages_comulative]
+        text_to_replace = f"{total_pages_comulative + 1} of {totla_pages}"
+        update_page(page, text_to_replace)
+        total_pages_comulative += (len(sorted_appendices[i].doc) + 1)
+
+
 def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
     initial_toc = source_doc.get_toc(simple=True)
     setup_documents(source_doc, appendices)
     appendices = sorted(
         appendices, key=lambda x: x.position_in_source_doc, reverse=True)
-    # for apendix in appendices:
-    #     source_doc.delete_page(apendix.position_in_source_doc)
     for apendix in appendices:
         source_doc.delete_page(apendix.position_in_source_doc)
         source_doc.insert_pdf(
@@ -105,6 +147,9 @@ def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
     updated_toc = update_toc(initial_toc, appendices)
     source_doc = update_toc_text(source_doc, initial_toc, updated_toc)
     source_doc.set_toc(updated_toc)
+
+    update_page_numbers(source_doc, appendices)
+
     output_path = f"{OUTPUT_DIR}/merged.pdf"
     source_doc.save(output_path)
     return output_path
