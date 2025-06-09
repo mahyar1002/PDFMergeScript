@@ -32,3 +32,5 @@
     ```
 
 3. You can find the result inside 'output' folder
+
+4. Please make sure to put this text --> [page_#] in the header file instead of page numbers.
