@@ -16,19 +16,45 @@
 2. In config.json file set the name of your source and appendices files. in appendix section you should also write the placeholders name. Below is an example of config.json file
 
     ```
-        {
-            "source_file": "source.pdf",
-            "appendices": [
-                {
-                    "file": "Appendix-A.pdf",
-                    "placeholder": "[2.1 Environmental Loads]"
-                },
-                {
-                    "file": "Appendix-B.pdf",
-                    "placeholder": "[2.2 Blast Loads]"
-                }
-            ]
-        }
+    {
+        "source_file": "ReactionForces-Rev05-test.pdf",
+        "appendices": [
+            {
+                "name": "3 APPENDIX A. REACTION FORCES REPORT",
+                "items": [
+                    {
+                        "file": "Environmental-loads.pdf",
+                        "placeholder": "[3.1 Environmental Loads]"
+                    },
+                    {
+                        "file": "Blast-loads.pdf",
+                        "placeholder": "[3.2 Blast Loads]"
+                    },
+                    {
+                        "file": "EQ-loads.pdf",
+                        "placeholder": "[3.3 Earthquake]"
+                    }
+                ]
+            },
+            {
+                "name": "4 APPENDIX B. REACTION FORCES REPORT",
+                "items": [
+                    {
+                        "file": "Environmental-loads.pdf",
+                        "placeholder": "[4.1 Environmental Loads]"
+                    },
+                    {
+                        "file": "Blast-loads.pdf",
+                        "placeholder": "[4.2 Blast Loads]"
+                    },
+                    {
+                        "file": "EQ-loads.pdf",
+                        "placeholder": "[4.3 Earthquake]"
+                    }
+                ]
+            }
+        ]
+    }
     ```
 
 3. You can find the result inside 'output' folder
