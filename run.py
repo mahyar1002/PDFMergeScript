@@ -80,12 +80,15 @@ def update_toc_text(doc: fitz.Document, initial_toc, updated_toc):
                 page.draw_rect(rect, fill=(1, 1, 1), color=(1, 1, 1), width=0)
 
                 # Left-aligned with the old text
-                text_x = rect.x0
+                text_x = rect.x0 + 1.5
                 # Vertically centered
                 text_y = rect.y0 + ((rect.y1 - rect.y0) / 1.35)
                 # Ensure text is written in the cleared area
                 page.insert_text((text_x, text_y),
-                                 f"{new_page}", fontsize=11, color=(0, 0, 0))
+                                 f"{new_page}",
+                                #  fontname="helv",
+                                 fontsize=11,
+                                 color=(0, 0, 0))
 
     return doc
 
