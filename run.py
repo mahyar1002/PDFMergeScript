@@ -41,7 +41,43 @@ def total_prev_len(current_name: str, appendices: List[AppendixItem]):
     return counter
 
 
-def update_toc(initial_toc, appendices: List[Appendix]):
+def update_toc(initial_toc, doc: fitz.Document, appendices: List[Appendix]):
+    updated_toc = []
+    start = False
+    appendixes_items = [
+        item for appendix in appendices for item in appendix.items]
+    appendixes_items = sorted(
+        appendixes_items, key=lambda x: x.position_in_source_doc)
+
+    def check_title_in_appendixes(title):
+        for item in appendixes_items:
+            if title in item.placeholder_text:
+                return True
+        return False
+
+    for entry in initial_toc:
+        level, title, page_num = entry
+
+        if not start:
+            start = check_title_in_appendixes(title)
+
+        if not start:
+            updated_toc.append([level, title, page_num])
+            continue
+
+        for doc_page_num in range(len(doc)):
+            page = doc[doc_page_num]
+            text_instances = page.search_for(title)
+            text_instances_placeholder = page.search_for(f"[{title}]")
+            text_instances_toc = page.search_for(f"{title} {page_num}")
+
+            if text_instances and not (text_instances_placeholder or text_instances_toc):
+                updated_toc.append([level, title, doc_page_num + 1])
+                break
+
+    return updated_toc 
+
+def update_toc_legacy(initial_toc, appendices: List[Appendix]):
     updated_toc = []
     appendixes_items = [
         item for appendix in appendices for item in appendix.items]
@@ -105,10 +141,10 @@ def update_toc_text(doc: fitz.Document, initial_toc, updated_toc):
                 text_y = rect.y0 + ((rect.y1 - rect.y0) / 1.35)
                 # Ensure text is written in the cleared area
                 page.insert_text((text_x, text_y),
-                                f"{new_page}",
-                                fontname="Helvetica-Bold" if level == 1 else "Helvetica",
-                                fontsize=11,
-                                color=(0, 0, 0))
+                                 f"{new_page}",
+                                 fontname="Helvetica-Bold" if level == 1 else "Helvetica",
+                                 fontsize=11,
+                                 color=(0, 0, 0))
 
     return doc
 
@@ -149,7 +185,6 @@ def update_page_numbers(doc: fitz.Document):
 
 def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
     initial_toc = source_doc.get_toc(simple=True)
-    # print("initial_tocinitial_tocinitial_tocinitial_toc", initial_toc)
     appendixes_items = [
         item for appendix in appendices for item in appendix.items]
     setup_documents(source_doc, appendixes_items)
@@ -159,9 +194,7 @@ def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
         source_doc.delete_page(appendixes_item.position_in_source_doc)
         source_doc.insert_pdf(
             appendixes_item.doc, start_at=appendixes_item.position_in_source_doc)
-    updated_toc = update_toc(initial_toc, appendices)
-    # print("updated_tocupdated_tocupdated_tocupdated_toc", updated_toc)
-    # print("initial_tocinitial_tocinitial_tocinitial_toc", initial_toc)
+    updated_toc = update_toc(initial_toc, source_doc, appendices)
     source_doc = update_toc_text(source_doc, initial_toc, updated_toc)
     source_doc.set_toc(updated_toc)
     update_page_numbers(source_doc)
