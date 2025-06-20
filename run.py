@@ -76,38 +76,39 @@ def update_toc_text(doc: fitz.Document, initial_toc, updated_toc):
         new_page = updated_toc[i][2]
 
         if old_page != new_page:  # Only update if page number changed
-            page = doc[2]
-            x_equation = len(str(new_page)) - 2
-            # for page_num in range(len(doc)):
-            # page = doc[page_num]
+            for page_number in range(0, 10):
+                page = doc[page_number]
+                x_equation = len(str(new_page)) - 2
+                # for page_num in range(len(doc)):
+                # page = doc[page_num]
 
-            search_text = f"{title} {old_page}"
-            text_instances = page.search_for(search_text)
+                search_text = f"{title} {old_page}"
+                text_instances = page.search_for(search_text)
 
-            if not text_instances:
-                continue
+                if not text_instances:
+                    continue
 
-            rect = text_instances[-1]
+                rect = text_instances[-1]
 
-            # 1. Erase old page number (draw white rectangle)
-            shape = page.new_shape()
-            shape.draw_rect(rect)
-            shape.finish(width=0, fill=(1, 1, 1), color=(1, 1, 1))
-            shape.commit()
+                # 1. Erase old page number (draw white rectangle)
+                shape = page.new_shape()
+                shape.draw_rect(rect)
+                shape.finish(width=0, fill=(1, 1, 1), color=(1, 1, 1))
+                shape.commit()
 
-            # Fill the area with white color manually
-            page.draw_rect(rect, fill=(1, 1, 1), color=(1, 1, 1), width=0)
+                # Fill the area with white color manually
+                page.draw_rect(rect, fill=(1, 1, 1), color=(1, 1, 1), width=0)
 
-            # Left-aligned with the old text
-            text_x = rect.x0 + 1.5 - (x_equation*5)
-            # Vertically centered
-            text_y = rect.y0 + ((rect.y1 - rect.y0) / 1.35)
-            # Ensure text is written in the cleared area
-            page.insert_text((text_x, text_y),
-                             f"{new_page}",
-                             fontname="Helvetica-Bold" if level == 1 else "Helvetica",
-                             fontsize=11,
-                             color=(0, 0, 0))
+                # Left-aligned with the old text
+                text_x = rect.x0 + 1.5 - (x_equation*5)
+                # Vertically centered
+                text_y = rect.y0 + ((rect.y1 - rect.y0) / 1.35)
+                # Ensure text is written in the cleared area
+                page.insert_text((text_x, text_y),
+                                f"{new_page}",
+                                fontname="Helvetica-Bold" if level == 1 else "Helvetica",
+                                fontsize=11,
+                                color=(0, 0, 0))
 
     return doc
 
@@ -148,6 +149,7 @@ def update_page_numbers(doc: fitz.Document):
 
 def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
     initial_toc = source_doc.get_toc(simple=True)
+    # print("initial_tocinitial_tocinitial_tocinitial_toc", initial_toc)
     appendixes_items = [
         item for appendix in appendices for item in appendix.items]
     setup_documents(source_doc, appendixes_items)
@@ -158,6 +160,8 @@ def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
         source_doc.insert_pdf(
             appendixes_item.doc, start_at=appendixes_item.position_in_source_doc)
     updated_toc = update_toc(initial_toc, appendices)
+    # print("updated_tocupdated_tocupdated_tocupdated_toc", updated_toc)
+    # print("initial_tocinitial_tocinitial_tocinitial_toc", initial_toc)
     source_doc = update_toc_text(source_doc, initial_toc, updated_toc)
     source_doc.set_toc(updated_toc)
     update_page_numbers(source_doc)
