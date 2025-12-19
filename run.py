@@ -4,9 +4,7 @@ from dataclasses import dataclass
 from typing import List
 from pathlib import Path
 import json
-
-INPUT_DIR = Path("inputs")
-OUTPUT_DIR = Path("output")
+import argparse
 
 
 @dataclass
@@ -75,7 +73,8 @@ def update_toc(initial_toc, doc: fitz.Document, appendices: List[Appendix]):
                 updated_toc.append([level, title, doc_page_num + 1])
                 break
 
-    return updated_toc 
+    return updated_toc
+
 
 def update_toc_legacy(initial_toc, appendices: List[Appendix]):
     updated_toc = []
@@ -183,7 +182,7 @@ def update_page_numbers(doc: fitz.Document):
         update_page(page, text_to_replace)
 
 
-def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
+def process_merge(source_doc: fitz.Document, appendices: List[Appendix], output_path: str):
     initial_toc = source_doc.get_toc(simple=True)
     appendixes_items = [
         item for appendix in appendices for item in appendix.items]
@@ -198,29 +197,42 @@ def process_merge(source_doc: fitz.Document, appendices: List[Appendix]):
     source_doc = update_toc_text(source_doc, initial_toc, updated_toc)
     source_doc.set_toc(updated_toc)
     update_page_numbers(source_doc)
-    output_path = f"{OUTPUT_DIR}/merged.pdf"
     source_doc.save(output_path)
     return output_path
 
 
 if __name__ == "__main__":
-    with open("config.json", "r") as config_file:
+    parser = argparse.ArgumentParser(description='Merge PDFs with appendices')
+    parser.add_argument('--config-path', default='config.json',
+                        help='Path to config JSON file (default: config.json)')
+    parser.add_argument('--output-path', default='output/merged.pdf',
+                        help='Path to output merged PDF (default: output/merged.pdf)')
+    parser.add_argument('--input-folder-path', default='inputs',
+                        help='Path to input folder containing input PDFs (default: inputs)')
+
+    args = parser.parse_args()
+
+    config_path = args.config_path
+    output_path = args.output_path
+    input_folder_path = args.input_folder_path
+
+    with open(config_path, "r") as config_file:
         configs = json.load(config_file)
 
     source_file = configs["source_file"]
     appendices = configs["appendices"]
 
-    source_doc = fitz.open(f"{INPUT_DIR}/{source_file}")
+    source_doc = fitz.open(f"{input_folder_path}/{source_file}")
     appendice_objs = []
     for apendix in appendices:
         item_objs = []
         for item in apendix["items"]:
             item_objs.append(
-                AppendixItem(doc=fitz.open(f"{INPUT_DIR}/{item['file']}"),
+                AppendixItem(doc=fitz.open(f"{input_folder_path}/{item['file']}"),
                              position_in_source_doc=0,
                              placeholder_text=item["placeholder"]))
         appendice_objs.append(Appendix(
             name=apendix["name"],
             items=item_objs
         ))
-    process_merge(source_doc, appendice_objs)
+    process_merge(source_doc, appendice_objs, output_path)
