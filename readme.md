@@ -3,17 +3,19 @@
 - .venv\Scripts\activate
 - pip install -r requirements.txt
 - python run.py
+- python run.py --config-path config.json --output-path output/merged.pdf --input-folder-path inputs
 
 # Ready the environment (In Mac or Linux)
 - virtualenv -p python3 .venv
 - source .venv/bin/activate
 - pip install -r requirements.txt
 - python run.py
+- python run.py --config-path config.json --output-path output/merged.pdf --input-folder-path inputs
 
 # Instructions
-1. Put your files inside 'inputs' folder. your files should consist of one source pdf and multiple appendix pdfs.
+1. Put your files inside 'inputs' folder (or specify --input-folder-path arg in the command). your files should consist of one source pdf and multiple appendix pdfs.
 
-2. In config.json file set the name of your source and appendices files. in appendix section you should also write the placeholders name. Below is an example of config.json file
+2. In config.json file (or whatever you set for --config-path arg) set the name of your source and appendices files. in appendix section you should also write the placeholders name. Below is an example of config.json file
 
     ```
     {
@@ -57,6 +59,6 @@
     }
     ```
 
-3. You can find the result inside 'output' folder
+3. You can find the result inside 'output' folder (or whatever you set for --output-path)
 
 4. Please make sure to put this text --> [page_#] in the header file instead of page numbers.
